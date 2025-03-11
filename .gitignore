@@ -43,3 +43,9 @@ infrastructure/prometheus/durable
 
 ### Durable Loki store
 infrastructure/loki/durable/
+
+
+##### Firebase key ####
+
+secrets/private-key-booking.json
+.env
