@@ -1,11 +1,13 @@
-package ro.unibuc.hello.service;
+package ro.unibuc.booking.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ro.unibuc.hello.data.ContactInfoRepository;
-import ro.unibuc.hello.data.ContactInfoEntity;
-import ro.unibuc.hello.dto.ContactInfoDTO;
-import ro.unibuc.hello.exception.EntityNotFoundException;
+
+import ro.unibuc.booking.exception.EntityNotFoundException;
+import ro.unibuc.booking.data.ContactInfoEntity;
+import ro.unibuc.booking.data.ContactInfoRepository;
+import ro.unibuc.booking.dto.ContactInfoDTO;
+
 import java.util.List;
 
 import java.util.Optional;
