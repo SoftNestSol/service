@@ -12,7 +12,6 @@ import ro.unibuc.booking.data.InformationEntity;
 import ro.unibuc.booking.data.InformationRepository;
 import ro.unibuc.booking.dto.Greeting;
 import ro.unibuc.booking.exception.EntityNotFoundException;
-import ro.unibuc.booking.service.GreetingsService;
 
 import java.util.Arrays;
 import java.util.List;
