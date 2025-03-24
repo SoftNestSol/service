@@ -10,7 +10,7 @@ services:
       MONGODB_CONECTION_URL: mongodb://root:example@mongo:27017/
       FIREBASE_KEY_PATH: /run/secrets/firebase-key.json  # Path to the secret
     volumes:
-        - ${FIREBASE_SECRET_PATH}:/run/secrets/firebase-key.json
+        - ${FIREBASE_KEY_PATH}:/run/secrets/firebase-key.json
     restart: always
     profiles:
       - "booking-service"
