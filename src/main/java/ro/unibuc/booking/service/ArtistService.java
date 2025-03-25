@@ -63,6 +63,35 @@ public class ArtistService {
         return photoUrls;
     }
 
+    public float computeArtistPrice(String id, int duration, int attendees, int distance) {
+        ArtistEntity artist = artistRepository.findById(id).orElse(null);
+        if (artist == null) {
+            return 0;
+        }
+
+        int basePrice = artist.getPrices().get("base").intValue();
+        int attendeesPrice = artist.getPrices().get("attendees").intValue();
+        int distancePrice = artist.getPrices().get("distance").intValue();
+        int price = basePrice * duration ;
+        if (attendees > 10) {
+            price += attendees * attendeesPrice;
+        }
+        if (attendees >100) {
+            price += attendees * attendeesPrice * 0.1;
+        }
+        if (distance > 1000) {
+            price += attendees * attendeesPrice * 0.01;
+        }
+        
+        if (distance > 100) {
+            price += distancePrice;
+        }
+
+        return price;
+
+        
+    }
+
     private boolean isValidExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
             return false;

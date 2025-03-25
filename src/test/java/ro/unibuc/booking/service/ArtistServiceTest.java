@@ -87,4 +87,50 @@ class ArtistServicePhotoUploadTest {
         assertTrue(exception.getMessage().contains("Invalid file extension"),
                 "Exception message should indicate an invalid file extension");
     }
+
+    // @Test
+    // void testUpdateArtist_NotExisting() throws IOException {
+    //     // Arrange
+    //     when(artistRepository.findById("missing")).thenReturn(Optional.empty());
+
+    //     // Act
+    //     ArtistEntity result = artistService.updateArtist("missing", new ArtistEntity(), null);
+
+    //     // Assert
+    //     assertNull(result);
+    // }
+
+    @Test
+    void testComputeArtistPrice_WithAllConditions() {
+        // Arrange
+        String id = "artist1";
+        ArtistEntity artist = new ArtistEntity();
+        Map<String, Number> prices = new HashMap<>();
+        prices.put("base", 10);
+        prices.put("special", 5);
+        prices.put("wedding", 20);
+        artist.setPrices(prices);
+
+        when(artistRepository.findById(id)).thenReturn(Optional.of(artist));
+
+        // Act
+        float price = artistService.computeArtistPrice(id, 2, 150, 1200);
+
+        // Assert
+        assertTrue(price > 0);
+    }
+
+    @Test
+    void testComputeArtistPrice_ArtistNotFound() {
+        // Arrange
+        when(artistRepository.findById("unknown")).thenReturn(Optional.empty());
+
+        // Act
+        float price = artistService.computeArtistPrice("unknown", 1, 10, 50);
+
+        // Assert
+        assertEquals(0, price);
+    }
+
+
 }
