@@ -37,7 +37,7 @@ public class GreetingsControllerIntegrationTest {
             .withEnv("MONGO_INITDB_ROOT_PASSWORD", "example")
             .withEnv("MONGO_INITDB_DATABASE", "testdb")
             .withCommand("--auth")
-            .withStartupTimeout(Duration.ofSeconds(60)); // Increase startup timeout
+
 
     @BeforeAll
     public static void setUp() throws Exception {
@@ -54,7 +54,7 @@ public class GreetingsControllerIntegrationTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        final String MONGO_URL = "mongodb://root:example@localhost:";
+        final String MONGO_URL = "mongodb://localhost:";
         final String PORT = String.valueOf(mongoDBContainer.getMappedPort(27017));
         registry.add("mongodb.connection.url", () -> MONGO_URL + PORT);
     }
