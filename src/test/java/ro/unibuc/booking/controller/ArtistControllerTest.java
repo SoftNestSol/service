@@ -12,11 +12,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ro.unibuc.booking.data.ArtistEntity;
 import ro.unibuc.booking.service.ArtistService;
 import java.lang.reflect.Field;
-
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.Arrays;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -68,7 +68,8 @@ class ArtistControllerTest {
                .andExpect(jsonPath("$.photos[0]").value("https://storage.googleapis.com/test-bucket/photo.jpg"));
     }
 
-    /* 
+   
+    /*
     @Test
     void test_createArtist_withInvalidPhoto() throws Exception {
         ArtistEntity artist = new ArtistEntity();
@@ -79,13 +80,25 @@ class ArtistControllerTest {
         MockMultipartFile photoPart = new MockMultipartFile(
                 "photos", "photo.gif", "image/gif", "dummy image data".getBytes());
 
-        when(artistService.createNewArtist(any(ArtistEntity.class), any()))
-                .thenThrow(new IllegalArgumentException("Invalid file extension: photo.gif"));
 
-        mockMvc.perform(multipart("/artists")
+       
+
+       Exception  exception = mockMvc.perform(multipart("/artists")
                         .file(photoPart)
                         .param("artist", artistJson))
-               .andExpect(status().isInternalServerError());
+               .andExpect(status().isBadRequest())
+               .andReturn().getResolvedException();
+
+            // Check if the exception message contains the expected error message, if its not null, then the test passes
+
+            assertNotNull( "An exception should be thrown when an invalid photo is uploaded", exception);
+            assertTrue(exception.getMessage().contains("Invalid file extension"),
+                    "Exception message should indicate an invalid file extension");
+            
+
+       
     }
-               */
+                    */
+               
+            
 }

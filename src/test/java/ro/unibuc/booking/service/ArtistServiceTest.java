@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.io.IOException;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,8 +111,8 @@ class ArtistServicePhotoUploadTest {
         ArtistEntity artist = new ArtistEntity();
         Map<String, Number> prices = new HashMap<>();
         prices.put("base", 10);
-        prices.put("special", 5);
-        prices.put("wedding", 20);
+        prices.put("attendees", 5);
+        prices.put("distance", 20);
         artist.setPrices(prices);
 
         when(artistRepository.findById(id)).thenReturn(Optional.of(artist));
