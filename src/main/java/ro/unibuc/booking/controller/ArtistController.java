@@ -26,7 +26,7 @@ public class ArtistController {
     @ResponseBody
     public ArtistEntity createArtist(
             @RequestParam("artist") String artistJson, 
-            @RequestParam MultipartFile[] photos) throws IOException {
+            @RequestParam ("photos")MultipartFile[] photos) throws IOException {
         
         // Convert JSON string to ArtistEntity object
         ArtistEntity artist = objectMapper.readValue(artistJson, ArtistEntity.class);
