@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import ro.unibuc.booking.data.InformationEntity;
 import ro.unibuc.booking.data.InformationRepository;
 
+//this is a comment to test jenkins build
+
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
