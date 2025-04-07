@@ -84,7 +84,6 @@ jacocoTestReport {
 task testIT(type: Test) {
 	outputs.dir snippetsDir
 	outputs.upToDateWhen { false }
-
 	useJUnitPlatform {
 		includeTags "IntegrationTest"
 	}
@@ -109,6 +108,9 @@ task testE2E() {
 					'src/test/resources'])
 		}
 	}
+}
+tasks.withType(JavaCompile) {
+    options.compilerArgs += '-parameters'
 }
 
 asciidoctor {

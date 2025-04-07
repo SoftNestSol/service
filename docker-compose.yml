@@ -28,7 +28,7 @@ services:
       - ./Dockerfile:/Dockerfile
       - /usr/libexec/docker/cli-plugins/docker-compose:/usr/libexec/docker/cli-plugins/docker-compose
     profiles:
-      - "booking-service-jenkins"
+      - "booking-service"
     user: 0:0
   mongo:
     image: mongo:6.0.20
