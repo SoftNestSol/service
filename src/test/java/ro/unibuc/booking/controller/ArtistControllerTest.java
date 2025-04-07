@@ -14,8 +14,6 @@ import ro.unibuc.booking.service.ArtistService;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 import static org.mockito.ArgumentMatchers.any;
