@@ -51,9 +51,9 @@ stage('Integration Tests') {
     steps {
         withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH')]) {
             sh """
-                FIREBASE_SECRET_PATH=$FIREBASE_SECRET_PATH \
-                ./gradlew testIT
-            """
+    ./gradlew testIT -Dfirebase.key.path=$FIREBASE_SECRET_PATH
+"""
+
         }
     }
 }
