@@ -23,6 +23,7 @@ pipeline {
 
         }
         sh "docker build -t raduc321/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
+        sh "docker login -u raduc321 -p ${DOCKER_PASSWORD}"
         sh "docker push raduc321/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
         }
       }
