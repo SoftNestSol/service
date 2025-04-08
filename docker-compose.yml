@@ -1,7 +1,6 @@
 services:
   booking:
     image: booking-img
-    build: .
     ports:
       - 8080:8080
       - 5005:5005
@@ -30,6 +29,8 @@ services:
     profiles:
       - "booking-service"
     user: 0:0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   mongo:
     image: mongo:6.0.20
     restart: always
