@@ -25,9 +25,9 @@ pipeline {
    env.IMAGE_TAG = "${env.MAJOR_VERSION}.\$((${env.MINOR_VERSION} + 1)).${env.PATCH_VERSION}"
 }
   
-        sh "docker build -t raduc321/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
+        sh "docker build -t raduc321/booking-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
         sh "docker login -u raduc321 -p ${DOCKER_PASSWORD_PSW}"
-        sh "docker push raduc321/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
+        sh "docker push raduc321/booking-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
         sh "git tag ${env.IMAGE_TAG}"
         sh "git push https://$GITHUB_TOKEN@github.com/SoftNestSol/service.git ${env.IMAGE_TAG}"
         }
@@ -40,7 +40,7 @@ pipeline {
                 sh """
                     IMAGE_TAG=${env.IMAGE_TAG} \
                     FIREBASE_SECRET_PATH=$FIREBASE_SECRET_PATH \
-                    docker compose up -d hello mongo
+                    docker compose up -d booking mongo
                 """
             }
         }
