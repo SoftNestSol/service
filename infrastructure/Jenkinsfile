@@ -33,7 +33,7 @@ pipeline {
         }
       }
 
-     stages {
+
     stage('Run Containers') {
         steps {
             withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH')]) {
@@ -44,9 +44,9 @@ pipeline {
                 """
             }
         }
-    }
+    
 }
 
 }
-    }
-
+    
+}
