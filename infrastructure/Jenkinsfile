@@ -74,15 +74,27 @@ pipeline {
         }
 
         stage('Integration Tests') {
-            steps {
-                // Using withCredentials correctly defines FIREBASE_SECRET_PATH scoped to this block
-                withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH')]) {
-                    // Use the explicit env.VAR syntax and quote the value passed to -D
-                    sh """
-                        ./gradlew testIT -Dfirebase.key.path="${env.FIREBASE_SECRET_PATH}"
-                    """
-                }
-            }
-        }
+     steps {
+         withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH')]) {
+
+             echo "DEBUG: Preparing to run Integration Tests."
+             // Debug Step 1: Verify the variable and file existence from Jenkins agent shell
+             sh '''
+                 echo "DEBUG Jenkins: FIREBASE_SECRET_PATH variable is set to = [$FIREBASE_SECRET_PATH]"
+                 echo "DEBUG Jenkins: Checking file listing for [$FIREBASE_SECRET_PATH] ..."
+                 ls -la "$FIREBASE_SECRET_PATH" || echo "DEBUG Jenkins: ls command failed for the path."
+                 echo "DEBUG Jenkins: Checking file content head (first line) for [$FIREBASE_SECRET_PATH] ..."
+                 head -n 1 "$FIREBASE_SECRET_PATH" || echo "DEBUG Jenkins: head command failed for the path."
+             '''
+
+             echo "DEBUG: Running Gradle testIT task..."
+             // Original command - Ensure Gradle receives the property
+             sh """
+                 ./gradlew testIT -Dfirebase.key.path="${env.FIREBASE_SECRET_PATH}" -i
+             """
+             // Added -i for --info logging level in Gradle to potentially get more context
+         }
+     }
+ }
     } 
 } 
