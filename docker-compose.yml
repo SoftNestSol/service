@@ -1,6 +1,6 @@
 services:
   booking:
-    image: booking-img
+    image: raduc321/booking-img:${IMAGE_TAG}
     ports:
       - 8080:8080
       - 5005:5005
