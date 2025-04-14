@@ -1,93 +1,72 @@
 pipeline {
-    agent any // Run on any available agent
-
-    tools {
-        jdk 'jdk21' // Ensure 'jdk21' is configured in Jenkins Global Tool Configuration
+    agent any
+        tools {
+        jdk 'jdk21' // This name must match the JDK installation name used in Jenkins Global Tool Configuration
     }
-
     environment {
-        // Reverted: Define credentials directly for automatic _PSW/_USR or direct injection
-        // Jenkins automatically provides DOCKER_PASSWORD_PSW for Username/Password credentials.
-        // Jenkins injects the secret directly into GITHUB_TOKEN for Secret Text credentials.
-        DOCKER_PASSWORD = credentials('docker_password')
-        // !! IMPORTANT !! This assumes 'github_token' is a 'Secret Text' credential.
-        // If it's 'Username/Password', this direct usage will fail differently or not work as expected.
-        GITHUB_TOKEN = credentials('github_token')
-
-        // Keep other environment variables for clarity
-        FIREBASE_CREDENTIAL_ID = 'firebase_key'  // Credential ID for Firebase key
-        DOCKER_USERNAME = 'raduc321'             // Docker username
-        DOCKER_REGISTRY = 'raduc321'             // Docker registry/user for image name
-        APP_NAME = 'booking-img'                 // Application/Image name
-        GIT_REPO_URL_BASE = 'github.com/SoftNestSol/service.git' // Base Git repo URL path
+        // Removed FIREBASE_SECRET_PATH from here
+        DOCKER_PASSWORD = credentials("docker_password")
+        GITHUB_TOKEN = credentials("github_token")
     }
 
     stages {
-        stage('Build') {
+        stage('Build & Test') {
             steps {
-                echo "Building the application..."
                 sh './gradlew clean build'
             }
         }
-
-        stage('Calculate Next Tag') {
+        stage('Tag image') {
             steps {
                 script {
-                    echo "Calculating next image tag..."
-                    sh 'git fetch --tags' // Fetch tags to ensure latest are considered
-                    def latestTag = sh(script: 'git tag | sort --version-sort | tail -1', returnStdout: true).trim()
-                    if (latestTag =~ /^\d+\.\d+\.\d+$/) { // Basic validation for X.Y.Z format
+                    // Fetch tags to ensure we get the latest ones
+                    sh([script: 'git fetch --tags', returnStdout: true]).trim() // Added --tags explicitly
+
+                    // Calculate next tag - Using script block for calculation logic
+                    def latestTag = sh([script: 'git tag | sort --version-sort | tail -1', returnStdout: true]).trim()
+                    if (latestTag) {
                         def parts = latestTag.tokenize('.')
-                        def major = parts[0].toInteger()
-                        def minor = parts[1].toInteger()
-                        def patch = parts[2].toInteger()
-                        // Example: Increment minor version. Adjust logic as needed.
-                        env.IMAGE_TAG = "${major}.${minor + 1}.${patch}"
-                        echo "Latest tag found: ${latestTag}. Next tag: ${env.IMAGE_TAG}"
-                    } else if (latestTag) {
-                        error("Could not parse latest tag ('${latestTag}') as X.Y.Z. Please check tag format.")
+                        if (parts.size() == 3 && parts[0].isInteger() && parts[1].isInteger() && parts[2].isInteger()) {
+                            def major = parts[0].toInteger()
+                            def minor = parts[1].toInteger()
+                            def patch = parts[2].toInteger()
+                            // Increment minor version for example
+                            env.IMAGE_TAG = "${major}.${minor + 1}.${patch}"
+                        } else {
+                            // Handle case where tag format is unexpected or no tags exist
+                            error("Could not parse latest tag: ${latestTag}. Please create an initial tag like '1.0.0'.")
+                            // Defaulting or setting manually if needed: env.IMAGE_TAG = '1.0.0'
+                        }
                     } else {
-                        env.IMAGE_TAG = '1.0.0' // Initial version if no tags found
-                        echo "No previous tags found. Starting with initial tag: ${env.IMAGE_TAG}"
+                         error("No tags found. Please create an initial tag like '1.0.0'.")
+                         // Defaulting or setting manually if needed: env.IMAGE_TAG = '1.0.0'
                     }
-                }
-            }
+                    echo "Calculated next image tag: ${env.IMAGE_TAG}"
+                } // End script block
+
+                // Use the calculated env.IMAGE_TAG
+                sh "docker build -t raduc321/booking-img:${env.IMAGE_TAG} ."
+                // Use the correct variable Jenkins injects for password credentials
+                // Assumes 'docker_password' is a Username/Password credential ID
+                // If it's Secret Text, use ${env.DOCKER_PASSWORD} directly.
+                // Better: Use withCredentials for docker login (see secondary fixes below)
+                sh "docker login -u raduc321 -p ${DOCKER_PASSWORD_PSW}"
+                sh "docker push raduc321/booking-img:${env.IMAGE_TAG}"
+                sh "git tag ${env.IMAGE_TAG}"
+                // Better: Use withCredentials or SSH key for git push (see secondary fixes below)
+                sh "git push https://${GITHUB_TOKEN}@github.com/SoftNestSol/service.git ${env.IMAGE_TAG}"
+             }
         }
 
-        stage('Build and Push Docker Image') {
+
+        stage('Run Containers') {
             steps {
-                script {
-                    def imageName = "${env.DOCKER_REGISTRY}/${env.APP_NAME}:${env.IMAGE_TAG}"
-                    echo "Building Docker image: ${imageName}"
-                    sh "docker build -t ${imageName} ."
-
-                    echo "Logging into Docker Hub..."
-                    // Reverted: Using password directly in command (triggers warnings)
-                    // Assumes DOCKER_PASSWORD = credentials(...) provides DOCKER_PASSWORD_PSW
-                    sh "docker login -u ${env.DOCKER_USERNAME} -p ${DOCKER_PASSWORD_PSW}"
-
-                    echo "Pushing Docker image: ${imageName}"
-                    sh "docker push ${imageName}"
-
-                    echo "Tagging Git commit with ${env.IMAGE_TAG}"
-                    sh "git tag ${env.IMAGE_TAG}"
-
-                    echo "Pushing Git tag ${env.IMAGE_TAG}"
-                    // Reverted: Using token directly in URL (triggers warnings, assumes GITHUB_TOKEN is secret text)
-                    // If GITHUB_TOKEN credential is Username/Password, this will likely fail.
-                    // Using SSH keys is strongly recommended for Git push from CI.
-                    sh "git push https://${GITHUB_TOKEN}@${env.GIT_REPO_URL_BASE} ${env.IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Deploy to Staging (Run Containers)') {
-            steps {
-                echo "Deploying containers using Docker Compose..."
-                withCredentials([file(credentialsId: env.FIREBASE_CREDENTIAL_ID, variable: 'FIREBASE_SECRET_PATH_TMP')]) {
+                // This block seems correct - it uses withCredentials locally
+                withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH_LOCAL')]) {
+                    // Using a different variable name 'FIREBASE_SECRET_PATH_LOCAL' to avoid any potential confusion
+                    // Also quoting the value passed as env var to docker compose
                     sh """
                         IMAGE_TAG=${env.IMAGE_TAG} \\
-                        FIREBASE_SECRET_PATH="${env.FIREBASE_SECRET_PATH_TMP}" \\
+                        FIREBASE_SECRET_PATH="${env.FIREBASE_SECRET_PATH_LOCAL}" \\
                         docker compose up -d booking mongo
                     """
                 }
@@ -95,34 +74,18 @@ pipeline {
         }
 
         stage('Integration Tests') {
-            steps {
-                echo "Running Integration Tests..."
-                withCredentials([file(credentialsId: env.FIREBASE_CREDENTIAL_ID, variable: 'FIREBASE_SECRET_PATH_TMP')]) {
-                    // Keep chmod fix: Ensure the secret file is readable by the Gradle test process.
-                    echo "Adjusting permissions for Firebase key file..."
-                    sh 'chmod o+r "${env.FIREBASE_SECRET_PATH_TMP}"'
-                    sh 'ls -la "${env.FIREBASE_SECRET_PATH_TMP}"' // Log permissions after change
+     steps {
+         withCredentials([file(credentialsId: 'firebase_key', variable: 'FIREBASE_SECRET_PATH')]) {
 
-                    echo "Executing Gradle testIT task..."
-                    // Pass the path to the Firebase key as a system property
-                    sh """
-                        ./gradlew testIT -Dfirebase.key.path="${env.FIREBASE_SECRET_PATH_TMP}"
-                    """
-                }
-            }
-        }
-    } // End stages
-
-    post {
-        always {
-            echo 'Pipeline finished.'
-            // Consider adding 'docker compose down' here if needed
-        }
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-    } // End post
-} // End pipeline
+          
+             echo "DEBUG: Running Gradle testIT task..."
+             // Original command - Ensure Gradle receives the property
+             sh """
+                 ./gradlew testIT -Dfirebase.key.path="${env.FIREBASE_SECRET_PATH}" -i
+             """
+             // Added -i for --info logging level in Gradle to potentially get more context
+         }
+     }
+ }
+    } 
+} 
