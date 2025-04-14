@@ -33,7 +33,8 @@ dependencies {
 	implementation 'org.springframework.data:spring-data-mongodb'
 	implementation 'commons-io:commons-io:2.18.0'
 	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
-
+	implementation 'org.slf4j:slf4j-api:2.0.7' // Use appropriate version
+    implementation 'ch.qos.logback:logback-classic:1.4.8' 
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
