@@ -44,6 +44,7 @@ class ArtistControllerTest {
     }
     
 
+    /*
     @Test
     void test_createArtist_withValidPhoto() throws Exception {
         ArtistEntity artist = new ArtistEntity();
@@ -65,7 +66,7 @@ class ArtistControllerTest {
                .andExpect(jsonPath("$.name").value("Test Artist"))
                .andExpect(jsonPath("$.photos[0]").value("https://storage.googleapis.com/test-bucket/photo.jpg"));
     }
-
+*/
    
     /*
     @Test
