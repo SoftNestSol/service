@@ -18,3 +18,12 @@ groups:
         annotations:
           summary: Increased info retrieval rate {{ $labels.value}} {{ $value }}
           description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      - alert: TOO-MANY-REQUESTS-IN-1-MIN
+        expr: rate(artist_created_count_total[1m]) > 5
+        for: 5s
+        labels: 
+          severity: warning
+        annotations:
+          summary: Unusual activity - Artists creation is too much
+          description: "Unusual activity - Artists creation is too much "
